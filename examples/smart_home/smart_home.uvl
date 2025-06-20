@@ -1,0 +1,65 @@
+features
+    SmartHome
+        optional
+            WindowControl
+                [0..1]
+                    WindowOpen {type 'BThread', OPEN_WINDOWS {type 'BEvent', requested true, priority 1}}
+                    WindowClose {type 'BThread', CLOSE_WINDOWS {type 'BEvent', requested true, priority 1}}
+                optional
+                    WindowsOpenable
+            TempControl
+                alternative
+                    Idle {
+                        type 'BThread', 
+                        IDLE {type 'BEvent', requested true},
+                        CLOSE_WINDOWS {type 'BEvent', waited_for true},
+                    }
+                    HeatFromAir {
+                        type 'BThread', 
+                        HEAT {type 'BEvent', requested true},
+                        OPEN_WINDOWS {type 'BEvent', waited_for true},
+                    }
+                    CoolFromAir {
+                        type 'BThread', 
+                        COOL {type 'BEvent', requested true},
+                        OPEN_WINDOWS {type 'BEvent', waited_for true},
+                    }
+                    Heater {
+                        type 'BThread', 
+                        HEAT {type 'BEvent', requested true},
+                        CLOSE_WINDOWS {type 'BEvent', waited_for true},
+                    }
+                    AirConditioner {
+                        type 'BThread', 
+                        COOL {type 'BEvent', requested true},
+                        CLOSE_WINDOWS {type 'BEvent', waited_for true},
+                    }
+        mandatory
+            Power
+                alternative
+                    SolarPower {type 'BThread'}
+                    GridPower {type 'BThread'}
+    Env {type 'Env', sun 1, rain 0, windows_open 0, external_temp 20, internal_temp 20}
+    Config {type 'Config', target_temp 20}
+
+constraints
+    // targets
+    (Env.internal_temp < Config.target_temp) <=> requested(HEAT)
+    (Env.internal_temp > Config.target_temp) <=> requested(COOL)
+    (Env.internal_temp == Config.target_temp) <=> requested(IDLE)
+
+    // window rules
+    WindowsOpenable <=> (Env.rain == 0)
+    waited_for(OPEN_WINDOWS) => WindowsOpenable
+    (Env.windows_open == 0 & waited_for(OPEN_WINDOWS)) <=> selected(OPEN_WINDOWS)
+    (Env.windows_open == 1 & (waited_for(CLOSE_WINDOWS) | !WindowsOpenable)) <=> selected(CLOSE_WINDOWS)
+
+    // temperature rules
+    HeatFromAir => (Env.internal_temp < Env.external_temp)
+    CoolFromAir => (Env.internal_temp > Env.external_temp)
+    Heater => (Env.internal_temp > Env.external_temp - 1 | !WindowsOpenable)
+    AirConditioner => (Env.internal_temp - 1 < Env.external_temp | !WindowsOpenable)
+
+    // power
+    (Env.sun == 1) => SolarPower
+    (Env.sun == 0) => GridPower

@@ -1,0 +1,15 @@
+features
+    Watertank
+        [1..4]
+            AddHot {type 'BThread', HOT {type 'BEvent', requested true, priority 1}}
+            AddCold {type 'BThread', COLD {type 'BEvent', requested true, priority 1}}
+            RemoveWater {type 'BThread', DRAIN {type 'BEvent', requested true, priority 2}}
+            Finished {type 'BThread', FINISHED {type 'BEvent', requested true, priority 1}}
+    Env {type 'Env', temp 0, level 0, target_temp 20, target_level 50}
+
+constraints
+    conflicting(HOT, COLD, DRAIN, FINISHED)
+    (Env.temp < Env.target_temp) => requested(HOT)
+    (Env.temp > Env.target_temp) => requested(COLD)
+    (Env.level > Env.target_level) <=> selected(DRAIN)
+    (Env.temp == Env.target_temp & Env.level == Env.target_level) <=> selected(FINISHED)

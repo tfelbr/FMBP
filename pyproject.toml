@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "da_tom_felber"
+version = "0.0.0"
+description = ""
+authors = [
+    "Tom Felber",
+]
+
+[tool.poetry.build]
+generate-setup-file = false
+
+[tool.poetry.dependencies]
+python = ">=3.10,<4"
+bppy = "~1"
+sansio-lsp-client = "~0"
+flask = "~3"
+
+[tool.poetry.group.dev.dependencies]
+mypy = "~1"
+pytest = "~7"
+
+[tool.mypy]
+strict = true
+warn_unused_ignores = true
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
