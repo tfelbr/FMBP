@@ -1,16 +1,19 @@
 [tool.poetry]
-name = "da_tom_felber"
+name = "FMBP"
 version = "0.0.0"
 description = ""
 authors = [
     "Tom Felber",
+]
+packages = [
+    { include = "fmbp" }
 ]
 
 [tool.poetry.build]
 generate-setup-file = false
 
 [tool.poetry.dependencies]
-python = ">=3.10,<4"
+python = ">=3.12,<4"
 bppy = "~1"
 sansio-lsp-client = "~0"
 flask = "~3"
