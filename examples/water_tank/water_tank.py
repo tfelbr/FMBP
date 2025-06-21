@@ -34,12 +34,16 @@ class WaterTank:
 class WaterTankListener(SimpleBProgramRunnerListener):
     def __init__(self, water_tank: WaterTank) -> None:
         self.__water_tank = water_tank
+        self.__has_finished = False
 
     def event_selected(self, b_program: BProgram, event: BEvent):
         if event == BEvent("FINISHED"):
-            print("Finished")
+            if not self.__has_finished:
+                print("Finished")
+                self.__has_finished = True
             time.sleep(1)
         else:
+            self.__has_finished = False
             if event == BEvent("HOT"):
                 self.__water_tank.add_water(1, 80)
             elif event == BEvent("COLD"):
