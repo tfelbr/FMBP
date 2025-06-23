@@ -1,6 +1,6 @@
 import json
-import sys
 from dataclasses import dataclass
+from multiprocessing import Queue
 from threading import Thread, Lock
 
 from bppy import sync, BEvent, BProgram
@@ -48,8 +48,9 @@ class DroneEnv:
 
 
 class DroneListener(SimpleBProgramRunnerListener):
-    def __init__(self, port: int) -> None:
-        self.__flask_app = Flask("drone")
+    def __init__(self, port: int, queue: Queue) -> None:
+        self.__queue = queue
+        self.__flask_app = Flask(f"drone-{port}")
         self.__flask_task = Thread(target=self.__flask_app.run, kwargs={"port": port, "threaded": True})
 
         self.__flask_app.route("/get")(self.__get)
@@ -86,8 +87,7 @@ class DroneListener(SimpleBProgramRunnerListener):
         self.__initial_lock.release()
 
     def event_selected(self, b_program: BProgram, event: BEvent):
-        print(f"\rCharge: {round(DroneEnv.CHARGE, 4)} --- Event: {event.name}", end=" ")
-        sys.stdout.flush()
+        self.__queue.put(f"Charge: {round(DroneEnv.CHARGE, 4):.2f} --- Event: {event.name}")
         if event.name in ["PATROL", "CHARGE", "FOLLOW"]:
             target: tuple[float, float] = event.data["target"]
             self.__next_target = target

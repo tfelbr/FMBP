@@ -151,35 +151,37 @@ class UVLLSPInterface(FileBasedModelInterface):
             self,
             context_vars: CONTEXT_DATA | None = None,
     ) -> RUNTIME_CONFIG:
-        command = "uvls/generate_configurations"
-        arguments = [self.__model.as_uri(), 1]
-        if context_vars is not None:
-            arguments.append(context_vars)
-        self.__client.send_request(
-            "workspace/executeCommand",
-            {"command": command, "arguments": arguments},
-        )
-        events = self.__send_and_receive()
-        if len(events) > 0:
-            event = events[0]
-            if isinstance(event, ShowMessage):
-                raise ValueError("No SAT solution for this file")
-
         config_path = Path(f"./{self.__model.name}-1.json")
-        while not config_path.exists():
-            pass
-        with config_path.open() as config_file:
-            retries = 0
-            while True:
-                try:
-                    json_data = json.loads(config_file.read())
-                except JSONDecodeError as e:
-                    if retries > 10:
-                        raise e
-                    retries += 1
-                else:
-                    break
-        config_path.unlink()
+        try:
+            command = "uvls/generate_configurations"
+            arguments = [self.__model.as_uri(), 1]
+            if context_vars is not None:
+                arguments.append(context_vars)
+            self.__client.send_request(
+                "workspace/executeCommand",
+                {"command": command, "arguments": arguments},
+            )
+            events = self.__send_and_receive()
+            if len(events) > 0:
+                event = events[0]
+                if isinstance(event, ShowMessage):
+                    raise ValueError("No SAT solution for this file")
+            while not config_path.exists():
+                pass
+            with config_path.open() as config_file:
+                retries = 0
+                while True:
+                    try:
+                        json_data = json.loads(config_file.read())
+                    except JSONDecodeError as e:
+                        if retries > 10:
+                            raise e
+                        retries += 1
+                    else:
+                        break
+        finally:
+            if config_path.exists():
+                config_path.unlink()
         return {
             key: value
             for key, value in json_data["config"].items()
