@@ -59,7 +59,10 @@ if __name__ == "__main__":
     print("\nReady", end="\n\n")
     while True:
         for index, queue in enumerate(queues):
-            print(f"Drone-{index}: {queue.get()}{" "*10}")
+            content = queue.get()
+            while queue.qsize() > 0:
+                content = queue.get()
+            print(f"Drone-{index}: {content}{" "*10}")
         print(f'\033[{len(queues)}A', end="\r")
         sys.stdout.flush()
 

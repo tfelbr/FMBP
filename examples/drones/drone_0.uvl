@@ -9,7 +9,7 @@ features
                 CHARGE {type 'BEvent', requested true, priority 1},
             }
     Env {type 'Env', charge 100, is_charging 0}
-    Config {type 'Config', is_leader 1, patrol_targets '0,1,2,3,4', leader_to_follow '8', follow_distance 50}
+    Config {type 'Config', patrol_targets '0,1,2,3,4', is_leader 1, leader_to_follow '1', follow_distance 50}
 
 constraints
     (Env.charge < 20 | Env.is_charging == 1) & Env.charge < 100 <=> requested(CHARGE)
