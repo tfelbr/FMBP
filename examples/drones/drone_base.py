@@ -14,7 +14,7 @@ from fmbp.model_interface import ModelInterface
 
 
 @dataclass
-class Target:
+class Node:
     id: str
     distance: float
     direction: tuple[float, float]
@@ -22,17 +22,18 @@ class Target:
     visited: bool
 
 
-TARGETS: dict[str, Target] = {}
+NODES: dict[str, Node] = {}
+DRONE_IDS: dict[str, str] = {}
 
 
 def update_targets(distances: dict[str, float], directions: dict[str, list[float]]) -> None:
     for key in distances:
-        if key in TARGETS:
-            TARGETS[key].distance = distances[key]
-            TARGETS[key].direction = (directions[key][0], directions[key][1])
-            TARGETS[key].position = (directions[key][0] + DroneEnv.POSITION[0], directions[key][1] + DroneEnv.POSITION[1])
+        if key in NODES:
+            NODES[key].distance = distances[key]
+            NODES[key].direction = (directions[key][0], directions[key][1])
+            NODES[key].position = (directions[key][0] + DroneEnv.POSITION[0], directions[key][1] + DroneEnv.POSITION[1])
         else:
-            TARGETS[key] = Target(
+            NODES[key] = Node(
                     id=key,
                     distance=distances[key],
                     direction=(directions[key][0], directions[key][1]),
@@ -42,7 +43,7 @@ def update_targets(distances: dict[str, float], directions: dict[str, list[float
 
 
 class DroneEnv:
-    CURRENT_TARGET: Target | None = None
+    CURRENT_TARGET: Node | None = None
     POSITION = (0.0, 0.0)
     CHARGE = 100
 
@@ -54,7 +55,7 @@ class DroneListener(SimpleBProgramRunnerListener):
         self.__flask_task = Thread(target=self.__flask_app.run, kwargs={"port": port, "threaded": True})
 
         self.__flask_app.route("/get")(self.__get)
-        self.__flask_app.route("/update/<distances>/<directions>/<own_position>/<charge_value>")(self.__update)
+        self.__flask_app.route("/update/<distances>/<directions>/<own_position>/<charge_value>/<drone_ids>")(self.__update)
 
         self.__next_target = (0.0, 0.0)
 
@@ -65,16 +66,24 @@ class DroneListener(SimpleBProgramRunnerListener):
     def __get(self) -> str:
         return json.dumps({"target": self.__next_target})
 
-    def __update(self, distances: str, directions: str, own_position: str, charge_value: str) -> str:
+    def __update(
+            self,
+            distances: str,
+            directions: str,
+            own_position: str,
+            charge_value: str,
+            drone_ids: str,
+    ) -> str:
         distances = json.loads(distances)
         directions = json.loads(directions)
         own_position_split = own_position.split(",")
         own_position = (float(own_position_split[0]), float(own_position_split[1]))
+        DRONE_IDS.update(json.loads(drone_ids))
         DroneEnv.CHARGE = float(charge_value)
         DroneEnv.POSITION = own_position
         if not self.__initialized:
             update_targets(distances, directions)
-            if TARGETS:
+            if NODES:
                 self.__initialized = True
                 self.__initial_lock.release()
         else:
@@ -110,18 +119,18 @@ class DroneContextSource(ContextSource):
 
 def reset_targets(targets: tuple[str, ...]) -> None:
     for target in targets:
-        if target in TARGETS:
-            TARGETS[target].visited = False
+        if target in NODES:
+            NODES[target].visited = False
 
 
 def target_visited(target_id: str) -> None:
-    if target_id in TARGETS:
-        TARGETS[target_id].visited = True
+    if target_id in NODES:
+        NODES[target_id].visited = True
 
 
-def find_min_distance(targets: tuple[str, ...]) -> Target | None:
+def find_min_distance(targets: tuple[str, ...]) -> Node | None:
     for target in targets:
-        if target not in TARGETS:
+        if target not in NODES:
            return None
     if DroneEnv.CURRENT_TARGET is not None and DroneEnv.CURRENT_TARGET.position == DroneEnv.POSITION:
         target_visited(DroneEnv.CURRENT_TARGET.id)
@@ -129,7 +138,7 @@ def find_min_distance(targets: tuple[str, ...]) -> Target | None:
     elif DroneEnv.CURRENT_TARGET is not None:
         return DroneEnv.CURRENT_TARGET
     nearest = None
-    for _, target in TARGETS.items():
+    for _, target in NODES.items():
         if target.id in targets and not target.visited:
             if nearest is None:
                 nearest = target
@@ -142,8 +151,8 @@ def find_min_distance(targets: tuple[str, ...]) -> Target | None:
     return DroneEnv.CURRENT_TARGET
 
 
-def follow_at_distance(target_id: str, distance: float) -> tuple[float, float] | None:
-    target = TARGETS.get(target_id)
+def follow_at_distance(drone_id: str, distance: float) -> tuple[float, float] | None:
+    target = NODES.get(DRONE_IDS.get(drone_id))
     if target is None:
         return None
     return target.direction[0] + DroneEnv.POSITION[0] - distance, target.direction[1] + DroneEnv.POSITION[1] - distance
