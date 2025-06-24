@@ -50,9 +50,10 @@ The drone example is simulated in Alchemist. To set up and run the simulation en
 1. Make sure OpenJDK 21 is installed and active on your PATH.
 2. Clone this repository:
    ```
-   Todo
+   https://github.com/tfelbr/fmbp-alchemist
    ```
-   
+3. Inside the repository's root, run ``./gradlew runDrones``. This command installs all dependencies, compiles the Scala code and runs the drone simulation.
+
 **Running:**
 - Run the python file within the respective example subdirectory, either within your IDE or via command line:
    ```bash
