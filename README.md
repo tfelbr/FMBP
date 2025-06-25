@@ -57,10 +57,32 @@ The drone example is simulated in Alchemist. To set up and run the simulation en
 **Running:**
 - Run the python file within the respective example subdirectory, either within your IDE or via command line:
    ```bash
-   python water_tank.py
+   python examples/water_tank/water_tank.py
+   python examples/smart_home/smart_home.py
    ```
 - For the drones, first run the python file and then start the simulation:
    ```bash
-   python drones.py # inside the example directory of this repo
-   ./gradlew runDrones # inside the root directory of the sim repo
+  python examples/drones/drones.py
+  ./gradlew runDrones # inside the root directory of the sim repo
    ```
+
+**Altering Program Behavior:**
+
+To get UVL language support, use VSCode to edit the supplemental UVL files to adapt the programs' behaviors at runtime.
+
+> :warning: **Deactivate Auto Save** to prevent VSCode from saving the file too early while editing.
+
+While you generally can edit the entire file, there are a few things to consider:
+- The *ConsistencyChecker* employed in all examples ensures consistency between runtime and model in realtime.
+Editing the feature model part will like cause an instant exception, as model and runtime are no longer aligned.
+- The *Env* feature contains variables for context measurements. 
+The actual values are acquired by the runtime and updated internally.
+The water tank and smart home examples respect the initial values at start.
+However, editing these values in the model while the programs are active will have no effect.
+The drone scenario receives their state from Alchemist, and will not consider the initial values.
+- The *Config* feature holds variables explicitly designed to be altered by the user.
+- You may also adapt the list of constraints.
+
+<p align="center">
+  <img src="img/drones.gif" alt="Drone Example" />
+</p>

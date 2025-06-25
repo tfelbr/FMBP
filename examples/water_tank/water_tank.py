@@ -1,4 +1,5 @@
 import json
+import logging
 import time
 from pathlib import Path
 
@@ -8,6 +9,7 @@ from fmbp.configuration_provider import ContextConfigurationProvider, CachingCon
     LoggingConfigurationProvider
 from fmbp.consistency_checker import DynamicConsistencyChecker
 from fmbp.context_source import ContextSource
+from fmbp.fm import Feature, Attribute
 from fmbp.fm_bp import fm_thread, FMBProgram, BPConfigurator, SimpleBProgramRunnerListener
 from fmbp.model_interface import UVLLSPInterface
 from fmbp.model_watcher import MTimeUpdatingModelWatcher
@@ -89,6 +91,7 @@ def finished():
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.CRITICAL)
     uvl_path = Path(__file__).parent / "water_tank.uvl"
     server_path = Path(json.loads((Path(__file__).parent.parent / "config.json").read_text())["uvls_path"])
     interface = UVLLSPInterface(uvl_path, server_path)
@@ -100,6 +103,15 @@ if __name__ == "__main__":
             ),
         )
     )
+
+    env_feature: Feature = list(filter(lambda feature: feature.name == "Env", interface.model_info))[0]
+    initial_temp: Attribute = \
+        list(filter(lambda attribute: attribute.name == "temp", env_feature.attributes))[0]
+    initial_level: Attribute = \
+        list(filter(lambda attribute: attribute.name == "level", env_feature.attributes))[0]
+    TANK.water_temperature = initial_temp.value
+    TANK.water_level = initial_level.value
+
     b_program = FMBProgram(
         bthreads=[add_hot(), add_cold(), remove_water(), finished()],
         event_selection_strategy=PriorityBasedEventSelectionStrategy(),

@@ -39,8 +39,8 @@ features
                 alternative
                     SolarPower {type 'BThread'}
                     GridPower {type 'BThread'}
-    Env {type 'Env', sun 1, rain 0, windows_open 0, external_temp 20, internal_temp 20}
-    Config {type 'Config', target_temp 20}
+    Env {type 'Env', windows_open 0, internal_temp 20}
+    Config {type 'Config', target_temp 20, sun 1, rain 0, external_temp 20}
 
 constraints
     // targets
@@ -49,17 +49,17 @@ constraints
     (Env.internal_temp == Config.target_temp) <=> requested(IDLE)
 
     // window rules
-    WindowsOpenable <=> (Env.rain == 0)
+    WindowsOpenable <=> (Config.rain == 0)
     waited_for(OPEN_WINDOWS) => WindowsOpenable
     (Env.windows_open == 0 & waited_for(OPEN_WINDOWS)) <=> selected(OPEN_WINDOWS)
     (Env.windows_open == 1 & (waited_for(CLOSE_WINDOWS) | !WindowsOpenable)) <=> selected(CLOSE_WINDOWS)
 
     // temperature rules
-    HeatFromAir => (Env.internal_temp < Env.external_temp)
-    CoolFromAir => (Env.internal_temp > Env.external_temp)
-    Heater => (Env.internal_temp > Env.external_temp - 1 | !WindowsOpenable)
-    AirConditioner => (Env.internal_temp - 1 < Env.external_temp | !WindowsOpenable)
+    HeatFromAir => (Env.internal_temp < Config.external_temp)
+    CoolFromAir => (Env.internal_temp > Config.external_temp)
+    Heater => (Env.internal_temp > Config.external_temp - 1 | !WindowsOpenable)
+    AirConditioner => (Env.internal_temp - 1 < Config.external_temp | !WindowsOpenable)
 
     // power
-    (Env.sun == 1) => SolarPower
-    (Env.sun == 0) => GridPower
+    (Config.sun == 1) => SolarPower
+    (Config.sun == 0) => GridPower

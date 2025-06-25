@@ -1,5 +1,5 @@
 import json
-import time
+import logging
 from pathlib import Path
 
 from bppy import *
@@ -8,6 +8,7 @@ from fmbp.configuration_provider import ContextConfigurationProvider, LoggingCon
     CachingConfigurationProvider
 from fmbp.consistency_checker import DynamicConsistencyChecker
 from fmbp.context_source import ContextSource
+from fmbp.fm import Feature, Attribute
 from fmbp.fm_bp import fm_thread, FMBProgram, BPConfigurator, SimpleBProgramRunnerListener
 from fmbp.model_interface import UVLLSPInterface
 from fmbp.model_watcher import MTimeUpdatingModelWatcher
@@ -44,18 +45,17 @@ class SmartHomeListener(SimpleBProgramRunnerListener):
                 case "CLOSE_WINDOWS":
                     self.__smart_home.windows_open = 0
                     print("Windows Closed")
-        time.sleep(0.5)
 
 
-Home = SmartHome()
+HOME = SmartHome()
 
 
 class SmartHomeContextSource(ContextSource):
 
     def get_data(self) -> dict[str, str | int | float | bool]:
         return {
-            "internal_temp": Home.temp,
-            "windows_open": Home.windows_open,
+            "internal_temp": HOME.temp,
+            "windows_open": HOME.windows_open,
         }
 
 
@@ -114,6 +114,7 @@ def grid_power():
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.CRITICAL)
     uvl_path = Path(__file__).parent / "smart_home.uvl"
     server_path = Path(json.loads((Path(__file__).parent.parent / "config.json").read_text())["uvls_path"])
     interface = UVLLSPInterface(uvl_path, server_path)
@@ -125,6 +126,15 @@ if __name__ == "__main__":
             ),
         )
     )
+
+    env_feature: Feature = list(filter(lambda feature: feature.name == "Env", interface.model_info))[0]
+    initial_window_state: Attribute = \
+        list(filter(lambda attribute: attribute.name == "windows_open", env_feature.attributes))[0]
+    initial_temp: Attribute = \
+        list(filter(lambda attribute: attribute.name == "internal_temp", env_feature.attributes))[0]
+    HOME.windows_open = initial_window_state.value
+    HOME.temp = initial_temp.value
+
     b_program = FMBProgram(
         bthreads=[
             window_open(),
@@ -139,7 +149,7 @@ if __name__ == "__main__":
         ],
         event_selection_strategy=PriorityBasedEventSelectionStrategy(),
         listener=BPConfigurator(
-            SmartHomeListener(Home),
+            SmartHomeListener(HOME),
             config_provider,
             DynamicConsistencyChecker(interface),
             MTimeUpdatingModelWatcher(interface),
