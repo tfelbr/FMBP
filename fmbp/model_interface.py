@@ -6,7 +6,8 @@ from subprocess import Popen, PIPE
 from typing import Optional
 
 from sansio_lsp_client import Client, JSONDict, TextDocumentItem, Event, TextDocumentIdentifier, \
-    VersionedTextDocumentIdentifier, TextDocumentContentChangeEvent, ShowMessage
+    VersionedTextDocumentIdentifier, TextDocumentContentChangeEvent, ShowMessage, PublishDiagnostics, Diagnostic, \
+    DiagnosticSeverity
 
 from fmbp.const import CONTEXT_DATA, RUNTIME_CONFIG
 from fmbp.fm import Feature
@@ -79,6 +80,21 @@ class LSPConnection:
         return headers
 
 
+class DefectUVLModel(Exception):
+    pass
+
+
+def _maybe_raise_defect(diagnostics: list[Diagnostic]) -> None:
+    defects = [diagnostic for diagnostic in diagnostics if diagnostic.severity == DiagnosticSeverity.ERROR]
+    if len(defects) > 0:
+        defects_message = "\n".join(
+            f"{defect.range.start} to {defect.range.end}: {defect.message}"
+            for defect in defects
+        )
+        raise DefectUVLModel(f"UVL model has errors\n\n{defects_message}")
+
+
+
 class UVLLSPInterface(FileBasedModelInterface):
     def __init__(self, model: Path, lsp: Path) -> None:
         self.__model = model
@@ -104,6 +120,8 @@ class UVLLSPInterface(FileBasedModelInterface):
         data = self.__connection.recv()
         try:
             for event in self.__client.recv(data):
+                if isinstance(event, PublishDiagnostics):
+                    _maybe_raise_defect(event.diagnostics)
                 # print(event)
                 events.append(event)
         except NotImplementedError:
