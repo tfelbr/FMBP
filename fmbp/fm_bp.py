@@ -139,13 +139,7 @@ class BPConfigurator(SimpleBProgramRunnerListener):
 
     def __maybe_get_new_config(self) -> dict[str, bool] | None:
         assert self.__configuration_provider is not None
-        while True:
-            try:
-                new_config = self.__configuration_provider.get_configuration()
-            except JSONDecodeError as e:
-                logging.error("Cannot decode json configuration: " + str(e))
-            else:
-                return new_config
+        return self.__configuration_provider.get_configuration()
 
     def __assert_event_consistency(self, b_program: FMBProgram) -> None:
         if self.__consistency_checker is not None:

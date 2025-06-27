@@ -1,4 +1,5 @@
 import json
+import logging
 from abc import ABC, abstractmethod
 from json import JSONDecodeError
 from pathlib import Path
@@ -21,7 +22,7 @@ class ModelInterface(ABC):
     def acquire_configuration(
             self,
             context_vars: CONTEXT_DATA | None = None,
-    ) -> RUNTIME_CONFIG:
+    ) -> RUNTIME_CONFIG | None:
         pass
 
     @abstractmethod
@@ -168,7 +169,7 @@ class UVLLSPInterface(FileBasedModelInterface):
     def acquire_configuration(
             self,
             context_vars: CONTEXT_DATA | None = None,
-    ) -> RUNTIME_CONFIG:
+    ) -> RUNTIME_CONFIG | None:
         config_path = Path(f"./{self.__model.name}-1.json")
         try:
             command = "uvls/generate_configurations"
@@ -184,16 +185,23 @@ class UVLLSPInterface(FileBasedModelInterface):
                 event = events[0]
                 if isinstance(event, ShowMessage):
                     raise ValueError("No SAT solution for this file")
+            # The UVL language server exports generated configurations into a json file.
+            # We wait for the file to be created and read it then.
             while not config_path.exists():
                 pass
             with config_path.open() as config_file:
+                # It seems as if UVL first creates the file and then writes to it, which is not an atomic process.
+                # This sometimes causes a race condition when we try to read the file before it is finished.
+                # As a consequence, incomplete data gets parsed and json complains.
+                # If this happens 10 times in a row, we log and return None.
                 retries = 0
                 while True:
                     try:
                         json_data = json.loads(config_file.read())
                     except JSONDecodeError as e:
                         if retries > 10:
-                            raise e
+                            logging.error(e)
+                            return None
                         retries += 1
                     else:
                         break

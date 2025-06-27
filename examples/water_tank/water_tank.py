@@ -39,6 +39,7 @@ class WaterTankListener(SimpleBProgramRunnerListener):
         self.__has_finished = False
 
     def event_selected(self, b_program: BProgram, event: BEvent):
+        # We give the events an effect
         if event == BEvent("FINISHED"):
             if not self.__has_finished:
                 print("Finished")
@@ -56,7 +57,9 @@ class WaterTankListener(SimpleBProgramRunnerListener):
 
 
 class WaterTankContextSource(ContextSource):
-
+    # The custom implementation for the water tank.
+    # Returns a dictionary containing context information relevant for this scenario.
+    # It returns the same names that can be found in the Env feature of the water tank model.
     def get_data(self) -> dict[str, str | int | float | bool]:
         return {
             "temp": TANK.water_temperature,
@@ -66,6 +69,10 @@ class WaterTankContextSource(ContextSource):
 TANK = WaterTank()
 
 
+# B-thread definition
+# We define b-threads the same way it is done in BPpy.
+# The only exception is the use of the fm_thread decorator to provide a name for the thread.
+# The name should be the same as in the model.
 @fm_thread("AddHot")
 def add_hot():
     while True:
@@ -91,19 +98,25 @@ def finished():
 
 
 if __name__ == "__main__":
+    # We deactivate error logging to hide the ugly json decoding errors
     logging.basicConfig(level=logging.CRITICAL)
+
+    # Paths to language server executable and model
     uvl_path = Path(__file__).parent / "water_tank.uvl"
     server_path = Path(json.loads((Path(__file__).parent.parent / "config.json").read_text())["uvls_path"])
+
+    # Model interface instantiation
     interface = UVLLSPInterface(uvl_path, server_path)
-    config_provider = LoggingConfigurationProvider(
-        CachingConfigurationProvider(
-            ContextConfigurationProvider(
+    config_provider = LoggingConfigurationProvider( # logs if a configuration has been returned by the level below
+        CachingConfigurationProvider(   # caches configurations and only returns new ones
+            ContextConfigurationProvider(   # uses a ContextSource to gather context data and feeds them into the interface
                 WaterTankContextSource(),
                 interface,
             ),
         )
     )
 
+    # We extract the initial context values from the provided model and set them in the runtime
     env_feature: Feature = list(filter(lambda feature: feature.name == "Env", interface.model_info))[0]
     initial_temp: Attribute = \
         list(filter(lambda attribute: attribute.name == "temp", env_feature.attributes))[0]
@@ -112,14 +125,15 @@ if __name__ == "__main__":
     TANK.water_temperature = initial_temp.value
     TANK.water_level = initial_level.value
 
+    # Behavioral program initialization
     b_program = FMBProgram(
-        bthreads=[add_hot(), add_cold(), remove_water(), finished()],
-        event_selection_strategy=PriorityBasedEventSelectionStrategy(),
-        listener=BPConfigurator(
+        bthreads=[add_hot(), add_cold(), remove_water(), finished()],   # we add all b-threads
+        event_selection_strategy=PriorityBasedEventSelectionStrategy(), # we use priorities
+        listener=BPConfigurator(    # to reconfigure the BP
             WaterTankListener(TANK),
             config_provider,
-            DynamicConsistencyChecker(interface),
-            MTimeUpdatingModelWatcher(interface),
+            DynamicConsistencyChecker(interface),   # checks consistency between model and runtime
+            MTimeUpdatingModelWatcher(interface),   # checks the model for updates via modification time changes
         ),
     )
     b_program.run()
