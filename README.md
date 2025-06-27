@@ -36,9 +36,9 @@ The project uses poetry for managing packages, but pip should work as well.
     ```
    In the repository, follow the instructions to set up the VSCode IDE and to build the binary.
 2. Inside the ``examples`` directory, create a file named ``config.json`` with the following content:
-   ```json
-   {"uvls_path": "/path/to/uvl-bp-lsp/target/release/uvls"}
-   ```
+    ```json
+    {"uvls_path": "/path/to/uvl-bp-lsp/target/release/uvls"}
+    ```
    This file should contain the path to the uvls executable obtained in the previous step. All examples reference this config file.
 
 This setup is sufficient to run the water tank and smart home examples.
@@ -55,16 +55,23 @@ The drone example is simulated in Alchemist. To set up and run the simulation en
 3. Inside the repository's root, run ``./gradlew runDrones``. This command installs all dependencies, compiles the Scala code and runs the drone simulation.
 
 **Running:**
+- If you created a virtual environment, enter it. If you use poetry, you can alternatively prefix all commands with ``poetry run`` to let poetry automatically enter the environment for this command.
 - Run the python file within the respective example subdirectory, either within your IDE or via command line:
-   ```bash
-   python examples/water_tank/water_tank.py
-   python examples/smart_home/smart_home.py
-   ```
+    ```bash
+    python examples/water_tank/water_tank.py
+    python examples/smart_home/smart_home.py
+    # or, if you use poetry
+    poetry run python examples/water_tank/water_tank.py
+    poetry run python examples/smart_home/smart_home.py
+    ```
 - For the drones, first run the python file and then start the simulation:
-   ```bash
-  python examples/drones/drones.py
-  ./gradlew runDrones # inside the root directory of the sim repo
-   ```
+    ```bash
+    python examples/drones/drones.py
+    # or, if you use poetry
+    poetry run python examples/drones/drones.py
+    # and then
+    ./gradlew runDrones # inside the root directory of the sim repo
+    ```
 
 **Altering Program Behavior:**
 
