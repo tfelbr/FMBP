@@ -64,7 +64,8 @@ The drone example is simulated in Alchemist. To set up and run the simulation en
     poetry run python examples/water_tank/water_tank.py
     poetry run python examples/smart_home/smart_home.py
     ```
-- For the drones, first run the python file and then start the simulation:
+- For the drones, first run the Python file and then start the simulation:
+    > :warning: Make sure to start the Python program **before** the Alchemist simulation. Otherwise, the simulation cannot find the REST endpoints and will crash.
     ```bash
     python examples/drones/drones.py
     # or, if you use poetry
