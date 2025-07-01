@@ -36,8 +36,8 @@ The project should be platform-independent, but is especially tested on Linux.
     https://github.com/tfelbr/uvl-bp-lsp
    
     In the repository, follow the instructions to build the binary and optionally set up the VSCode IDE.
-   > [!IMPORTANT]
-   > Make sure to install Z3 as outlined in the repositroy above. This is used to solve new configurations and is crucial for the examples.
+> [!IMPORTANT]
+> Make sure to install Z3 as outlined in the repositroy above. This is used to solve new configurations and is crucial for the examples.
 2. Inside the ``examples`` directory, create a file named ``config.json`` with the following content:
     ```json
     {"uvls_path": "/path/to/uvl-bp-lsp/target/release/uvls"}
@@ -68,8 +68,6 @@ The drone example is simulated in Alchemist. To set up and run the simulation en
     poetry run python -m examples.smart_home.smart_home
     ```
 - For the drones, first run the Python file and then start the simulation with ``./gradlew runDrones`` inside the simulation's repository. This command installs all dependencies, builds the Scala classes and runs the simulation.
-  > [!IMPORTANT]
-  > Make sure to start the Python program **before** the Alchemist simulation. Otherwise, the simulation cannot find the REST endpoints and will crash.
     ```bash
     python examples.drones.drones
     # or, if you use poetry
@@ -77,6 +75,8 @@ The drone example is simulated in Alchemist. To set up and run the simulation en
     # and then
     ./gradlew runDrones # inside the root directory of the sim repo
     ```
+> [!IMPORTANT]
+> Make sure to start the Python program **before** the Alchemist simulation. Otherwise, the simulation cannot find the REST endpoints and will crash.
 
 **Altering Program Behavior:**
 
