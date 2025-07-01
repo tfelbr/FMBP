@@ -5,7 +5,7 @@ Welcome to FMBP, a Python framework for contextual reconfiguration of behavioral
 ## Getting Started
 ### Setting Up the Environment
 **Requirements:**
-- Python 3.12 (BPpy is currently not compatible to 3.13)
+- Python >=3.10, <3.13 (BPpy is currently not compatible to 3.13; Tested with 3.12)
 - poetry or pip
 - Linux is recommended, but Windows should work
 

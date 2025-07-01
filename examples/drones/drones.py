@@ -62,7 +62,7 @@ if __name__ == "__main__":
             content = queue.get()
             while queue.qsize() > 0:
                 content = queue.get()
-            print(f"Drone-{index}: {content}{" "*10}")
+            print(f"Drone-{index}: {content}{' '*10}")
         print(f'\033[{len(queues)}A', end="\r")
         sys.stdout.flush()
 
