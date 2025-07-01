@@ -5,10 +5,12 @@ Welcome to FMBP, a Python framework for contextual reconfiguration of behavioral
 ## Getting Started
 ### Setting Up the Environment
 **Requirements:**
-- Python >= 3.12
+- Python 3.12 (BPpy is currently not compatible to 3.13)
 - poetry or pip
+- Linux is recommended, but Windows should work
 
 The project uses poetry for managing packages, but pip should work as well.
+The project should be platform-independent, but is especially tested on Linux.
 
 **Using poetry (recommended, mandatory for contributors):**
 
@@ -30,11 +32,11 @@ The project uses poetry for managing packages, but pip should work as well.
 - (For UVL language support) VSCode + UVL extension
 
 **General Setup:**
-1. All examples use the UVL LSP with BP extensions. To obtain the binary, clone this repository:
-    ```
+1. All examples use the UVL LSP with BP extensions. To obtain the binary, clone the following repository:
     https://github.com/tfelbr/uvl-bp-lsp
-    ```
-   In the repository, follow the instructions to set up the VSCode IDE and to build the binary.
+   
+    In the repository, follow the instructions to build the binary and optionally set up the VSCode IDE.
+    > [!IMPORTANT] Make sure to install Z3 as outlined in the repositroy above. This is used to solve new configurations and is crucial for the examples.
 2. Inside the ``examples`` directory, create a file named ``config.json`` with the following content:
     ```json
     {"uvls_path": "/path/to/uvl-bp-lsp/target/release/uvls"}
@@ -49,27 +51,27 @@ The drone example is simulated in Alchemist. To set up and run the simulation en
 
 1. Make sure OpenJDK 21 is installed and active on your PATH.
 2. Clone this repository:
-   ```
    https://github.com/tfelbr/fmbp-alchemist
-   ```
-3. Inside the repository's root, run ``./gradlew runDrones``. This command installs all dependencies, compiles the Scala code and runs the drone simulation.
 
 **Running:**
-- If you created a virtual environment, enter it. If you use poetry, you can alternatively prefix all commands with ``poetry run`` to let poetry automatically enter the environment for this command.
-- Run the python file within the respective example subdirectory, either within your IDE or via command line:
+- If you manually created a virtual environment, enter it. If you used poetry *without* setting up a manual env, you can alternatively prefix all commands with ``poetry run`` to let poetry automatically enter its environment for this command.
+- Run the python file within the respective example subdirectory, either within your IDE or via command line.
+    Use ``python -m`` for module mode:
     ```bash
-    python examples/water_tank/water_tank.py
-    python examples/smart_home/smart_home.py
-    # or, if you use poetry
-    poetry run python examples/water_tank/water_tank.py
-    poetry run python examples/smart_home/smart_home.py
+    python -m examples.water_tank.water_tank
+    python -m examples.smart_home.smart_home
     ```
-- For the drones, first run the Python file and then start the simulation:
-    > :warning: Make sure to start the Python program **before** the Alchemist simulation. Otherwise, the simulation cannot find the REST endpoints and will crash.
+    Or, if you use poetry:
     ```bash
-    python examples/drones/drones.py
+    poetry run python -m examples.water_tank.water_tank
+    poetry run python -m examples.smart_home.smart_home
+    ```
+- For the drones, first run the Python file and then start the simulation with ``./gradlew runDrones`` inside the simulation's repository. This command installs all dependencies, builds the Scala classes and runs the simulation.
+    > [!IMPORTANT] Make sure to start the Python program **before** the Alchemist simulation. Otherwise, the simulation cannot find the REST endpoints and will crash.
+    ```bash
+    python examples.drones.drones
     # or, if you use poetry
-    poetry run python examples/drones/drones.py
+    poetry run python examples.drones.drones
     # and then
     ./gradlew runDrones # inside the root directory of the sim repo
     ```
@@ -77,8 +79,8 @@ The drone example is simulated in Alchemist. To set up and run the simulation en
 **Altering Program Behavior:**
 
 To get UVL language support, use VSCode to edit the supplemental UVL files to adapt the programs' behaviors at runtime.
-
-> :warning: **Deactivate Auto Save** to prevent VSCode from saving the file too early while editing.
+The UVL files can be found inside the same directories as the Python files.
+> [!IMPORTANT] **Deactivate Auto Save** to prevent VSCode from saving the file too early while editing.
 
 While you generally can edit the entire file, there are a few things to consider:
 - The *ConsistencyChecker* employed in all examples ensures consistency between runtime and model in realtime.
