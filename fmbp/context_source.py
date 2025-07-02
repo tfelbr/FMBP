@@ -4,6 +4,9 @@ from fmbp.const import CONTEXT_DATA
 
 
 class ContextSource(ABC):
+    """
+    Gathers context information.
+    """
     @abstractmethod
     def get_data(self) -> CONTEXT_DATA:
         pass

@@ -59,11 +59,14 @@ class UnexpectedEvent(EventInconsistencyInfo):
 
 
 class ConsistencyChecker(ABC):
+    """
+    Validates the consistency between runtime and feature model.
+    """
     @abstractmethod
     def _get_model_info(self) -> dict[str, BThreadFeature]:
         pass
 
-    def check_runtime_consistency(
+    def check_event_consistency(
             self,
             runtime_b_threads: tuple[BThreadFeature, ...]
     ) -> tuple[EventInconsistencyInfo, ...]:
@@ -87,7 +90,7 @@ class ConsistencyChecker(ABC):
                     info.append(UnexpectedEvent(runtime_b_thread.name, runtime_event))
         return tuple(info)
 
-    def check_b_thread_set(
+    def check_b_thread_consistency(
             self,
             b_threads: tuple[str, ...],
     ) -> tuple[BThreadInconsistencyInfo, ...]:
@@ -108,6 +111,9 @@ class ConsistencyChecker(ABC):
 
 
 class StaticConsistencyChecker(ConsistencyChecker):
+    """
+    Performs consistency checks on statically provided model information.
+    """
     def __init__(self, model_info: dict[str, BThreadFeature]) -> None:
         self.__model_info = model_info
 
@@ -116,6 +122,9 @@ class StaticConsistencyChecker(ConsistencyChecker):
 
 
 class DynamicConsistencyChecker(ConsistencyChecker):
+    """
+    Performs consistency checks on dynamically retrieved model information from a ModelInterface.
+    """
     def __init__(self, uvl_interface: ModelInterface) -> None:
         self.__uvl_interface = uvl_interface
 

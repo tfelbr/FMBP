@@ -28,6 +28,9 @@ if __name__ == "__main__":
     log = logging.getLogger('werkzeug')
     log.setLevel(logging.ERROR)
     logging.basicConfig(level=logging.CRITICAL)
+
+    # The 4 drones are controlled in their own processes.
+    # We use Python's multiprocessing to achieve that.
     queues: list[Queue] = []
     for i in range(4):
         queue = Queue()

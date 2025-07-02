@@ -15,14 +15,24 @@ from fmbp.fm import Feature
 
 
 class ModelInterface(ABC):
+    """
+    Serves as interface to the feature model.
+    Provides access to model information and generates new configurations using the implemented backend.
+    """
     def __init__(self) -> None:
         self.model_info = self._acquire_model_info()
 
     @abstractmethod
     def acquire_configuration(
-            self,
-            context_vars: CONTEXT_DATA | None = None,
+        self,
+        context_vars: CONTEXT_DATA | None = None,
     ) -> RUNTIME_CONFIG | None:
+        """
+        Method to acquire a new configuration using the implemented backend.
+
+        :param context_vars: Optional list of context values that should be taken into consideration.
+        :return: New configuration. If it fails for some reason, returns None (this pattern is not optimal, revision is needed.)
+        """
         pass
 
     @abstractmethod
@@ -34,6 +44,9 @@ class ModelInterface(ABC):
         pass
 
     def update(self) -> None:
+        """
+        Triggers self-update and loads new model information into cache.
+        """
         self._update()
         self.model_info = self._acquire_model_info()
 
@@ -97,6 +110,9 @@ def _maybe_raise_defect(diagnostics: list[Diagnostic]) -> None:
 
 
 class UVLLSPInterface(FileBasedModelInterface):
+    """
+    Implementation of the ModelInterface using the UVL language server as backend.
+    """
     def __init__(self, model: Path, lsp: Path) -> None:
         self.__model = model
         self.__server = lsp

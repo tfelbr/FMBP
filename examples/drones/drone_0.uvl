@@ -1,3 +1,4 @@
+// Each drone has its own model to allow changing them independently.
 features
     Drone
         alternative
@@ -9,6 +10,9 @@ features
                 CHARGE {type 'BEvent', requested true, priority 1},
             }
     Env {type 'Env', charge 100, is_charging 0}
+    // patrol_targets are Alchemist node ids. Right now, there are 5 targets with ids 0 to 4.
+    // leader_to_follow is the drone number as used in the feature models. E.g., this drone has id 0.
+    // The drone ids get mapped to the Alchemist ids in the code.
     Config {type 'Config', patrol_targets '0,1,2,3,4', is_leader 1, leader_to_follow '1', follow_distance 50}
 
 constraints

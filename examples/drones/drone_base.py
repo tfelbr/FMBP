@@ -74,6 +74,7 @@ class DroneListener(SimpleBProgramRunnerListener):
             charge_value: str,
             drone_ids: str,
     ) -> str:
+        # update function for the REST interface
         distances = json.loads(distances)
         directions = json.loads(directions)
         own_position_split = own_position.split(",")
@@ -103,6 +104,7 @@ class DroneListener(SimpleBProgramRunnerListener):
 
 
 class DroneContextSource(ContextSource):
+    # Returns the drone's context data
     def __init__(self) -> None:
         self.__drone_last_charge = DroneEnv.CHARGE
 
@@ -161,10 +163,12 @@ def follow_at_distance(drone_id: str, distance: float) -> tuple[float, float] | 
 @fm_thread("Patrol")
 def patrol(interface: ModelInterface):
     while True:
+        # extracts target config from the model
         config_feature: Feature = list(filter(lambda feature: feature.name == "Config", interface.model_info))[0]
         patrol_targets: Attribute = \
             list(filter(lambda attribute: attribute.name == "patrol_targets", config_feature.attributes))[0]
         parsed_patrol_targets: tuple[str, ...] = tuple(patrol_targets.value.split(","))
+        # gets next target to fly to
         maybe_nearest = find_min_distance(parsed_patrol_targets)
         if maybe_nearest is not None:
             yield sync(request=BEvent("PATROL", {"target": maybe_nearest.position}))
@@ -173,11 +177,13 @@ def patrol(interface: ModelInterface):
 @fm_thread("Follow")
 def follow(interface: ModelInterface):
     while True:
+        # extracts following config from the model
         config_feature: Feature = list(filter(lambda feature: feature.name == "Config", interface.model_info))[0]
         follow_target: Attribute = \
             list(filter(lambda attribute: attribute.name == "leader_to_follow", config_feature.attributes))[0]
         follow_distance: Attribute = \
             list(filter(lambda attribute: attribute.name == "follow_distance", config_feature.attributes))[0]
+        # gets coordinates to fly to
         maybe_target = follow_at_distance(follow_target.value, follow_distance.value)
         if maybe_target is not None:
             yield sync(request=BEvent("FOLLOW", {"target": maybe_target}))

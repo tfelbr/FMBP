@@ -40,7 +40,7 @@ features
                     SolarPower {type 'BThread'}
                     GridPower {type 'BThread'}
     Env {type 'Env', windows_open 0, internal_temp 20}
-    Config {type 'Config', target_temp 20, sun 1, rain 0, external_temp 20}
+    Config {type 'Config', target_temp 20, sun 1, rain 0, external_temp 20} // alter this at runtime to change the smart homes behavior.
 
 constraints
     // targets

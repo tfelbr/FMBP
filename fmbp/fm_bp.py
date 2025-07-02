@@ -1,5 +1,3 @@
-import logging
-from json import JSONDecodeError
 from typing import Callable, Optional, Any
 
 from bppy import thread, BProgram, BProgramRunnerListener, BEvent
@@ -9,7 +7,7 @@ from fmbp.configuration_provider import ConfigurationProvider, StaticConfigurati
 from fmbp.consistency_checker import ConsistencyChecker, MissingEvent, IncorrectEvent, UnexpectedEvent, \
     MissingBThread, UnexpectedBThread, EventInconsistencyError, BThreadInconsistencyError
 from fmbp.const import RUNTIME_CONFIG
-from fmbp.model_watcher import UpdatingModelWatcher
+from fmbp.model_watcher import ModelWatcher
 
 
 class FMThread:
@@ -92,6 +90,9 @@ class FMBProgram(BProgram):
 
 
 class SimpleBProgramRunnerListener(BProgramRunnerListener):
+    """
+    Simple subclass to mitigate the need to implement all non-used abstract methods every time
+    """
 
     def starting(self, b_program):
         pass
@@ -125,12 +126,16 @@ class SimpleBProgramRunnerListener(BProgramRunnerListener):
 
 
 class BPConfigurator(SimpleBProgramRunnerListener):
+    """
+    The frameworks central component.
+    Reconfigures the behavioral program and serves as engine for all other components.
+    """
     def __init__(
             self,
             listener: BProgramRunnerListener | None = None,
             configuration_provider: ConfigurationProvider | None = None,
             fm_consistency_checker: ConsistencyChecker | None = None,
-            uvl_file_watcher: UpdatingModelWatcher | None = None,
+            uvl_file_watcher: ModelWatcher | None = None,
     ) -> None:
         self.__listener = listener or SimpleBProgramRunnerListener()
         self.__configuration_provider = configuration_provider
@@ -160,7 +165,7 @@ class BPConfigurator(SimpleBProgramRunnerListener):
                 name = b_program.get_name(ticket["bt"])
                 runtime_b_threads.append(BThreadFeature(name, tuple(events)))
             final_errors = []
-            for result in self.__consistency_checker.check_runtime_consistency(tuple(runtime_b_threads)):
+            for result in self.__consistency_checker.check_event_consistency(tuple(runtime_b_threads)):
                 match result:
                     case MissingEvent(b_thread_name, event):
                         final_errors.append(
@@ -186,7 +191,7 @@ class BPConfigurator(SimpleBProgramRunnerListener):
     def __assert_b_thread_consistency(self, b_program: FMBProgram) -> None:
         if self.__consistency_checker is not None:
             final_errors = []
-            for result in self.__consistency_checker.check_b_thread_set(b_program.get_all_b_thread_names())  :
+            for result in self.__consistency_checker.check_b_thread_consistency(b_program.get_all_b_thread_names())  :
                 match result:
                     case MissingBThread(name):
                         final_errors.append(f"Missing b-thread: '{name}' found in model but not in runtime")

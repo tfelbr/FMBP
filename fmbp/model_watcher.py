@@ -11,6 +11,9 @@ class ModelWatcher(ABC):
 
 
 class UpdatingModelWatcher(ModelWatcher, ABC):
+    """
+    Watches the underlying feature model and notifies the ModelInterface to update itself on changes.
+    """
     def __init__(self, model_interface: ModelInterface) -> None:
         self.__interface = model_interface
 
@@ -24,6 +27,9 @@ class UpdatingModelWatcher(ModelWatcher, ABC):
 
 
 class MTimeUpdatingModelWatcher(UpdatingModelWatcher):
+    """
+    Uses the modification time stamp of files to check if a feature model has been updated.
+    """
     def __init__(self, model_interface: FileBasedModelInterface) -> None:
         super().__init__(model_interface)
         self.__interface = model_interface

@@ -6,12 +6,22 @@ from fmbp.model_interface import ModelInterface
 
 
 class ConfigurationProvider(ABC):
+    """
+    Provides configurations for the framework.
+    """
     @abstractmethod
     def get_configuration(self) -> RUNTIME_CONFIG | None:
+        """
+        Acquire new configuration.
+        :return: New configuration. May return None.
+        """
         pass
 
 
 class StaticConfigurationProvider(ConfigurationProvider):
+    """
+    Returns a static, user-provided configuration.
+    """
     def __init__(self, config: RUNTIME_CONFIG) -> None:
         self.__config = config
 
@@ -20,6 +30,9 @@ class StaticConfigurationProvider(ConfigurationProvider):
 
 
 class ContextConfigurationProvider(ConfigurationProvider):
+    """
+    Uses a ContextSource and a ModelInterface to generate context-sensitive configurations.
+    """
     def __init__(
             self,
             context_source: ContextSource,
@@ -33,6 +46,9 @@ class ContextConfigurationProvider(ConfigurationProvider):
 
 
 class CachingConfigurationProvider(ConfigurationProvider):
+    """
+    Caches previous configurations and only returns new ones.
+    """
     def __init__(self, configuration_provider: ConfigurationProvider) -> None:
         self.__configuration_provider = configuration_provider
         self.__current_config: RUNTIME_CONFIG | None = None
@@ -46,6 +62,9 @@ class CachingConfigurationProvider(ConfigurationProvider):
 
 
 class LoggingConfigurationProvider(ConfigurationProvider):
+    """
+    Logs if a new configuration has been retrieved.
+    """
     def __init__(self, configuration_provider: ConfigurationProvider) -> None:
         self.__configuration_provider = configuration_provider
 
