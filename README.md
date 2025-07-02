@@ -55,6 +55,8 @@ The drone example is simulated in Alchemist. To set up and run the simulation en
    https://github.com/tfelbr/fmbp-alchemist
 
 **Running:**
+
+We recommend starting with the water tank example.
 - If you manually created a virtual environment, enter it. If you used poetry *without* setting up a manual env, you can alternatively prefix all commands with ``poetry run`` to let poetry automatically enter its environment for this command.
 - Run the python file within the respective example subdirectory, either within your IDE or via command line.
     Use ``python -m`` for module mode:
