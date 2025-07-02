@@ -114,6 +114,7 @@ def grid_power():
 
 
 if __name__ == "__main__":
+    # Very similar setup as with the water tank.
     logging.basicConfig(level=logging.CRITICAL)
     uvl_path = Path(__file__).parent / "smart_home.uvl"
     server_path = Path(json.loads((Path(__file__).parent.parent / "config.json").read_text())["uvls_path"])

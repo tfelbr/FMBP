@@ -12,7 +12,7 @@ class ConfigurationProvider(ABC):
     @abstractmethod
     def get_configuration(self) -> RUNTIME_CONFIG | None:
         """
-        Acquire new configuration.
+        Acquire a new configuration.
         :return: New configuration. May return None.
         """
         pass

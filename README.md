@@ -77,6 +77,7 @@ We recommend starting with the water tank example.
     # and then
     ./gradlew runDrones # inside the root directory of the sim repo
     ```
+    In the Alchemist simulation, hit the *Add Effect* button and select the last item *DrawSmartCam* to see the drones' visual radius.
 > [!IMPORTANT]
 > Make sure to start the Python program **before** the Alchemist simulation. Otherwise, the simulation cannot find the REST endpoints and will crash.
 

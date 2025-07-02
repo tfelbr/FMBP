@@ -19,6 +19,9 @@ class UpdatingModelWatcher(ModelWatcher, ABC):
 
     @abstractmethod
     def _file_modified(self) -> bool:
+        """
+        :return: If the watched file has been modified
+        """
         pass
 
     def check(self) -> None:

@@ -31,10 +31,13 @@ if __name__ == "__main__":
 
     # The 4 drones are controlled in their own processes.
     # We use Python's multiprocessing to achieve that.
+    # All processes get a queue where they put there state in which gets collected here and printed.
     queues: list[Queue] = []
     for i in range(4):
         queue = Queue()
         queues.append(queue)
+
+        # Very similar setup as with the water tank.
         uvl_path = Path(__file__).parent / f"drone_{i}.uvl"
         server_path = Path(json.loads((Path(__file__).parent.parent / "config.json").read_text())["uvls_path"])
         interface = UVLLSPInterface(uvl_path, server_path)
@@ -60,6 +63,8 @@ if __name__ == "__main__":
 
     time.sleep(1)
     print("\nReady", end="\n\n")
+
+    # Printing the drones' states.
     while True:
         for index, queue in enumerate(queues):
             content = queue.get()
