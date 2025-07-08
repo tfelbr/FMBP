@@ -9,6 +9,9 @@ features
                     WindowsOpenable
             TempControl
                 alternative
+                    // The b-threads here contain waited-for events.
+                    // These are meant as "expected" states, e.g. the window should be open if we want to cool with outside air.
+                    // The waited-for events are mapped to actions in the constraint list.
                     Idle {
                         type 'BThread', 
                         IDLE {type 'BEvent', requested true},
@@ -50,6 +53,7 @@ constraints
 
     // window rules
     WindowsOpenable <=> (Config.rain == 0)
+    // The expectation values for the windows are mapped to their actions.
     waited_for(OPEN_WINDOWS) => WindowsOpenable
     (Env.windows_open == 0 & waited_for(OPEN_WINDOWS)) <=> selected(OPEN_WINDOWS)
     (Env.windows_open == 1 & (waited_for(CLOSE_WINDOWS) | !WindowsOpenable)) <=> selected(CLOSE_WINDOWS)
