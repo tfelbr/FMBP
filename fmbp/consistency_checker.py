@@ -83,7 +83,7 @@ class ConsistencyChecker(ABC):
                         found_event = True
                         if runtime_event != model_event:
                             info.append(IncorrectEvent(model_b_thread.name, model_event, runtime_event))
-                if not found_event:
+                if not found_event and not model_event.optional:
                     info.append(MissingEvent(model_b_thread.name, model_event))
             for runtime_event in runtime_b_thread.events:
                 if not list(filter(lambda e: e.name == runtime_event.name, model_b_thread.events)):

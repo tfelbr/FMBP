@@ -9,6 +9,7 @@ class EventAttribute:
     requested: bool = False
     blocked: bool = False
     waited_for: bool = False
+    optional: bool = False
     priority: int = 0
 
 
@@ -32,19 +33,22 @@ def events_from_attributes(attributes: tuple[Attribute, ...]) -> tuple[EventAttr
             requested = False
             blocked = False
             waited_for = False
+            optional = False
             priority = 0
             for sub_attribute in attribute.value:
                 match sub_attribute:
-                    case Attribute(name="requested", value=1.0):
+                    case Attribute(name="requested", value=True):
                         requested = True
-                    case Attribute(name="blocked", value=1.0):
+                    case Attribute(name="blocked", value=True):
                         blocked = True
-                    case Attribute(name="waited_for", value=1.0):
+                    case Attribute(name="waited_for", value=True):
                         waited_for = True
+                    case Attribute(name="optional", value=True):
+                        optional = True
                     case Attribute(name="priority", value=value):
                         assert isinstance(value, float), value
                         priority = value
-            events.append(EventAttribute(attribute.name, requested, blocked, waited_for, priority))
+            events.append(EventAttribute(attribute.name, requested, blocked, waited_for, optional, priority))
 
     return tuple(events)
 

@@ -71,9 +71,9 @@ We recommend starting with the water tank example.
     ```
 - For the drones, first run the Python file and then start the simulation with ``./gradlew runDrones`` inside the simulation's repository. This command installs all dependencies, builds the Scala classes and runs the simulation.
     ```bash
-    python examples.drones.drones
+    python -m examples.drones.drones
     # or, if you use poetry
-    poetry run python examples.drones.drones
+    poetry run python -m examples.drones.drones
     # and then
     ./gradlew runDrones # inside the root directory of the sim repo
     ```
